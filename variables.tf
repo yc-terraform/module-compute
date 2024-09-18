@@ -315,16 +315,6 @@ variable "is_nat" {
 }
 
 
-variable "secondary_disks" {
-  description = "A set of disks to attach to the instance."
-  type        = list(object({
-    disk_id     = string
-    auto_delete = bool
-    device_name = string
-    mode        = string
-  }))
-  default     = []
-}
 
 variable "scheduling_policy_preemptible" {
   description = "Specifies if the instance is preemptible. Defaults to false."
@@ -433,4 +423,26 @@ variable "backup_frequency" {
   description = "Timing of backups: Default daily,  Default weekly, Default monthly"
   type        = string
   default     = "Default daily"
+}
+
+variable "create_secondary_disk" {
+  description = "Flag to create a secondary disk"
+  type        = bool
+  default     = false
+}
+
+variable "secondary_disks" {
+  description = "List of secondary disks"
+  type = list(object({
+    index              = optional(number)
+    disk_id     = optional(string)
+    auto_delete = optional(bool, true)
+    device_name = optional(string, "secondary-disk")
+    mode        = optional(string, "READ_WRITE")
+    size        = optional(number, 100)
+    block_size  = optional(number, 4096)
+    type        = optional(string, "network-hdd")
+    description = optional(string, "Secondary disk")
+  }))
+  default = []
 }

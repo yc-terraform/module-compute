@@ -86,15 +86,15 @@ resource "yandex_compute_instance" "this" {
   }
 
 
-  dynamic "secondary_disk" {
-    for_each = var.secondary_disks != null ? [for s in var.secondary_disks : s] : []
-    content {
-      disk_id     = secondary_disk.value.disk_id
-      auto_delete = secondary_disk.value.auto_delete
-      device_name = secondary_disk.value.device_name
-      mode        = secondary_disk.value.mode
-    }
+dynamic "secondary_disk" {
+  for_each = var.secondary_disks != null ? [for s in var.secondary_disks : s] : []
+  content {
+    disk_id     = secondary_disk.value.disk_id != null ? secondary_disk.value.disk_id : (length(yandex_compute_disk.secondary) > 0 ? yandex_compute_disk.secondary[0].id : null)
+    auto_delete = secondary_disk.value.auto_delete
+    device_name = secondary_disk.value.device_name
+    mode        = secondary_disk.value.mode
   }
+}
 
   scheduling_policy {
     preemptible = var.scheduling_policy_preemptible
@@ -115,7 +115,7 @@ resource "yandex_compute_instance" "this" {
 
 
   dynamic "filesystem" {
-    for_each = var.filesystems
+    for_each = var.filesystems != null ? [for f in var.filesystems : f] : []
     content {
       filesystem_id = filesystem.value.filesystem_id != null ? filesystem.value.filesystem_id : (length(yandex_compute_filesystem.this) > 0 ? yandex_compute_filesystem.this[0].id : null)
       device_name   = filesystem.value.device_name
@@ -123,14 +123,4 @@ resource "yandex_compute_instance" "this" {
     }
   }
   
-}
-
-data "yandex_backup_policy" "this_backup_policy" {
-  name  = var.backup_frequency
-}
-
-resource "yandex_backup_policy_bindings" "this_backup_binding" {
-  count       = var.backup ? 1 : 0
-  instance_id = yandex_compute_instance.this.id
-  policy_id   = data.yandex_backup_policy.this_backup_policy.id
 }

@@ -20,5 +20,5 @@ output "instance_id" {
 
 output "disks_ids" {
   description = "The list of attached disk IDs"
-  value       = [for d in yandex_compute_instance.this.*.secondary_disk : d.id]
+  value       = var.secondary_disks != null && length(var.secondary_disks) > 0 ? [for disk in var.secondary_disks : disk.disk_id] : []
 }

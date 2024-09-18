@@ -14,8 +14,9 @@ module "dev" {
   serial_port_enable = true
   allow_stopping_for_update = true
   enable_oslogin_or_ssh_keys = {
-    enable-oslogin = "true"
-    ssh-keys = null
+    enable-oslogin = "true"  
+    ssh_user        = null
+    ssh_key       = null
   }
   metadata_options = {
     http_endpoint = "enabled"
@@ -26,7 +27,6 @@ module "dev" {
       subnet_id = "e9b1rvg1c0vpio65eks8"
       ipv4       = true
       nat        = true
-      
     }
   ]
   labels = {
@@ -35,13 +35,23 @@ module "dev" {
   }
   secondary_disks = [
     {
-    disk_id     = yandex_compute_disk.dev.id
-    auto_delete = true
-    device_name = "secondary-disk"
-    mode        = "READ_WRITE"
+      disk_id     = null
+      auto_delete = true
+      device_name = "secondary-disk"
+      mode        = "READ_WRITE"
+      size        = 100          
+      block_size  = 4096        
+      type        = "network-hdd" 
+    },
+    {
+      disk_id     = yandex_compute_disk.secondary.id
+      auto_delete = true
+      device_name = "secondary-disk-2"
+      mode        = "READ_WRITE"
     }
   ]
   create_filesystem = true
+  create_secondary_disk = true
   filesystem_name = "dev-filesystem"
   filesystem_description = "Filesystem for dev"
   filesystem_size = 50
@@ -50,23 +60,29 @@ module "dev" {
     {
       filesystem_id = null 
       mode = "READ_WRITE"
+    },
+    {
+      filesystem_id = yandex_compute_filesystem.secondary.id
+      mode          = "READ_WRITE"
     }
   ]
 }
 
-
-resource "yandex_compute_disk" "dev" {
-  name               = "secondary-disk"
-  description = "secondary-disk"
-  folder_id   = "b1gacgku08inenk2320f"
-  zone        = var.yc_zone
-  size        = var.size
-  block_size  = "4096"
-  type        = "network-hdd"
+resource "yandex_compute_disk" "secondary" {
+  name               = "secondary-disk-2"
+  description        = "secondary disk"
+  folder_id          = "b1gacgku08inenk2320f"
+  zone               = var.yc_zone
+  size               = var.size
+  block_size         = "4096"
+  type               = "network-hdd"
 }
 
-
-/// при созздании secondary disk добавить еще map с именем дисков n+1 со всеми характеристикими. если в парамтерах seconday disks указал id, то его не надо сздавать а зацепить существуется через for each 
-/// filesystem [check "name" {
-   /// bla bla bla filesystems
-//}]
+resource "yandex_compute_filesystem" "secondary" {
+  name        = "secondary-filesystem"
+  description = "Secondary filesystem for dev"
+  folder_id   = "b1gacgku08inenk2320f"
+  zone        = var.yc_zone
+  size        = 50
+  type        = "network-ssd"
+}

@@ -24,7 +24,7 @@ module "dev" {
   }
   network_interfaces = [
     {
-      subnet_id = "e9b1rvg1c0vpio65eks8"
+      subnet_id = yandex_vpc_subnet.sub_a.id
       ipv4       = true
       nat        = true
     }
@@ -44,6 +44,15 @@ module "dev" {
       type        = "network-hdd" 
     },
     {
+      disk_id     = null
+      auto_delete = true
+      device_name = "third-disk"
+      mode        = "READ_WRITE"
+      size        = 100          
+      block_size  = 4096        
+      type        = "network-hdd" 
+    },
+    {
       disk_id     = yandex_compute_disk.secondary.id
       auto_delete = true
       device_name = "secondary-disk-2"
@@ -57,6 +66,10 @@ module "dev" {
   filesystem_size = 50
   filesystem_type = "network-ssd"
   filesystems = [
+    {
+      filesystem_id = null 
+      mode = "READ_WRITE"
+    },   
     {
       filesystem_id = null 
       mode = "READ_WRITE"

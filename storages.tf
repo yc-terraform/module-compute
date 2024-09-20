@@ -20,7 +20,7 @@ resource "yandex_compute_disk" "this" {
 }
 
 resource "yandex_compute_disk" "secondary" {
-  count       = var.create_secondary_disk ? 1 : 0
+  count       = length(var.secondary_disks) 
   name        = format("%s-secondary-disk-%d", var.name, count.index + 1)
   description = lookup(var.secondary_disks[count.index], "description", null)
   folder_id   = local.folder_id
@@ -33,13 +33,13 @@ resource "yandex_compute_disk" "secondary" {
 
 
 resource "yandex_compute_filesystem" "this" {
-  count       = var.create_filesystem ? 1 : 0
-  name        = var.name
-  description = var.filesystem_description
+  count       = var.create_filesystem ? length(var.filesystems) : 0 
+  name        = format("%s-filesystem-%d", var.name, count.index + 1)
+  description = lookup(var.filesystems[count.index], "description", var.filesystem_description)
   folder_id   = local.folder_id
-  zone        = var.filesystem_zone != null ? var.filesystem_zone : var.zone
-  size        = var.filesystem_size
-  block_size  = var.filesystem_block_size
-  type        = var.filesystem_type
-  labels             = var.labels
+  zone        = lookup(var.filesystems[count.index], "zone", var.zone)
+  size        = lookup(var.filesystems[count.index], "size", var.filesystem_size)
+  block_size  = lookup(var.filesystems[count.index], "block_size", var.filesystem_block_size)
+  type        = lookup(var.filesystems[count.index], "type", var.filesystem_type)
+  labels      = var.labels
 }

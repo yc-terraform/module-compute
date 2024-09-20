@@ -34,13 +34,13 @@ module "dev" {
   }
   network_interfaces = [
     {
-      subnet_id = "e9b1rvg1c0vpio65eks8"
+      subnet_id = yandex_vpc_subnet.sub_a.id
       ipv4       = true
       nat        = true
       
     },
     {
-      subnet_id  = "e9b1rvg1c0vpio65eks8"
+      subnet_id = yandex_vpc_subnet.sub_a.id
       ipv4       = true
       nat        = false
       dns_record = []

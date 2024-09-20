@@ -89,9 +89,9 @@ resource "yandex_compute_instance" "this" {
 dynamic "secondary_disk" {
   for_each = var.secondary_disks != null ? [for s in var.secondary_disks : s] : []
   content {
-    disk_id     = secondary_disk.value.disk_id != null ? secondary_disk.value.disk_id : (length(yandex_compute_disk.secondary) > 0 ? yandex_compute_disk.secondary[0].id : null)
+    disk_id     = secondary_disk.value.disk_id != null ? secondary_disk.value.disk_id : yandex_compute_disk.secondary[secondary_disk.key].id
     auto_delete = secondary_disk.value.auto_delete
-    device_name = secondary_disk.value.device_name
+    device_name = secondary_disk.value.device_name != null ? secondary_disk.value.device_name : format("secondary-disk-%02d", secondary_disk.key + 1)
     mode        = secondary_disk.value.mode
   }
 }
@@ -117,8 +117,8 @@ dynamic "secondary_disk" {
   dynamic "filesystem" {
     for_each = var.filesystems != null ? [for f in var.filesystems : f] : []
     content {
-      filesystem_id = filesystem.value.filesystem_id != null ? filesystem.value.filesystem_id : (length(yandex_compute_filesystem.this) > 0 ? yandex_compute_filesystem.this[0].id : null)
-      device_name   = filesystem.value.device_name
+      filesystem_id = filesystem.value.filesystem_id != null ? filesystem.value.filesystem_id : (length(yandex_compute_filesystem.this) > filesystem.key ? yandex_compute_filesystem.this[filesystem.key].id : null)
+      device_name   = filesystem.value.device_name != null ? filesystem.value.device_name : format("filesystem-%02d", filesystem.key + 1)
       mode          = filesystem.value.mode
     }
   }

@@ -1,6 +1,6 @@
 module "dev" {
   source        = "../../"
-  image_family      = "ubuntu-2404-lts-oslogin"
+  image_family      = "ubuntu-2204-lts-oslogin"
   zone          = var.yc_zone
   name          = "dev"
   hostname      = "dev"
@@ -14,7 +14,7 @@ module "dev" {
   serial_port_enable = true
   allow_stopping_for_update = true
   monitoring  = true
-  backup      = false
+  backup      = true
   create_filesystem       = true
   filesystem_name         = "my-filesystem"
   filesystem_description  = "Filesystem for dev instance"
@@ -26,7 +26,8 @@ module "dev" {
 
   enable_oslogin_or_ssh_keys = {
     enable-oslogin = "true"
-    ssh-keys = null
+    ssh_key = null
+    ssh_user = null
   }
   metadata_options = {
     http_endpoint = "enabled"

@@ -4,6 +4,9 @@ data "yandex_client_config" "client" {}
 ### Locals
 locals {
   folder_id = var.folder_id == null ? data.yandex_client_config.client.folder_id : var.folder_id
+  enable_oslogin = lookup(var.enable_oslogin_or_ssh_keys, "enable-oslogin", "false")
+  ssh_key = lookup(var.enable_oslogin_or_ssh_keys, "ssh_key", null)
+  ssh_user = lookup(var.enable_oslogin_or_ssh_keys, "ssh_user", null)
 }
 
 data "yandex_compute_image" "image" {
@@ -22,15 +25,14 @@ resource "yandex_compute_instance" "this" {
   folder_id          = local.folder_id
   service_account_id = var.service_account_id != null ? var.service_account_id : (var.monitoring || var.backup ? yandex_iam_service_account.sa_instance[0].id : null)
   labels             = var.labels
-
   metadata = merge(
     var.custom_metadata,
     var.serial_port_enable ? {"serial-port-enable" = "1"} : {},
     var.monitoring || var.backup ? {
       "user-data" = format("#cloud-config\npackages:\n  - curl\n  - perl\n  - jq\n%s\nruncmd:\n%s",
-        fileexists(var.enable_oslogin_or_ssh_keys.ssh_key) ? format("users:\n  - name: %s\n    sudo: ALL=(ALL) NOPASSWD:ALL\n    shell: /bin/bash\n    ssh_authorized_keys:\n      - %s",
-          var.enable_oslogin_or_ssh_keys.ssh_user,
-          file(var.enable_oslogin_or_ssh_keys.ssh_key)
+        local.ssh_key != null ? format("users:\n  - name: %s\n    sudo: ALL=(ALL) NOPASSWD:ALL\n    shell: /bin/bash\n    ssh_authorized_keys:\n      - %s",
+          local.ssh_user != null ? local.ssh_user : "default_user",
+          file(local.ssh_key)
         ) : "",
         join("\n", compact([
           var.backup ? "  - curl 'https://storage.yandexcloud.net/backup-distributions/agent_installer.sh' | sudo bash" : null,
@@ -38,10 +40,11 @@ resource "yandex_compute_instance" "this" {
         ]))
       )
     } : {},
-    var.enable_oslogin_or_ssh_keys.enable-oslogin == "true" ? {
-      "enable-oslogin" = var.enable_oslogin_or_ssh_keys.enable-oslogin
+    local.enable_oslogin == "true" ? {
+      "enable-oslogin" = local.enable_oslogin
     } : {}
   )
+
 
   allow_stopping_for_update = var.allow_stopping_for_update
   network_acceleration_type = var.network_acceleration_type

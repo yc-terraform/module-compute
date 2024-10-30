@@ -339,16 +339,6 @@ variable "placement_policy" {
 }
 
 
-variable "filesystems" {
-  description = "List of filesystems that are attached to the instance."
-  type = list(object({
-    filesystem_id = optional(string, null)
-    device_name   = optional(string, null)
-    mode          = optional(string, "READ_WRITE")
-  }))
-  default = []
-}
-
 variable "service_account_id" {
   description = "Optional service account ID"
   type        = string
@@ -376,60 +366,21 @@ variable "backup" {
   default     = false
 }
 
-variable "create_filesystem" {
-  description = "Flag to create a filesystem"
-  type        = bool
-  default     = false
+variable "filesystems" {
+  description = "List of filesystems that are attached to the instance."
+  type = list(object({
+    filesystem_id = optional(string, null)  
+    device_name   = optional(string, null)   
+    mode          = optional(string, "READ_WRITE")  
+    description   = optional(string, null)  
+    zone          = optional(string, null)  
+    size          = optional(number, 10)    
+    block_size    = optional(number, 4096) 
+    type          = optional(string, "network-ssd") 
+  }))
+  default = []
 }
 
-variable "filesystem_name" {
-  description = "Name of the filesystem"
-  type        = string
-  default     = null
-}
-
-variable "filesystem_description" {
-  description = "Description of the filesystem"
-  type        = string
-  default     = null
-}
-
-
-variable "filesystem_zone" {
-  description = "Availability zone for the filesystem"
-  type        = string
-  default     = null
-}
-
-variable "filesystem_size" {
-  description = "Size of the filesystem, specified in GB"
-  type        = number
-  default     = null
-}
-
-variable "filesystem_block_size" {
-  description = "Block size of the filesystem, specified in bytes"
-  type        = number
-  default     = null
-}
-
-variable "filesystem_type" {
-  description = "Type of the filesystem"
-  type        = string
-  default     = "network-hdd"
-}
-
-variable "backup_frequency" {
-  description = "Timing of backups: Default daily,  Default weekly, Default monthly"
-  type        = string
-  default     = "Default daily"
-}
-
-variable "create_secondary_disk" {
-  description = "Flag to create a secondary disk"
-  type        = bool
-  default     = false
-}
 
 variable "secondary_disks" {
   description = "List of secondary disks"
@@ -445,4 +396,10 @@ variable "secondary_disks" {
     description = optional(string, "Secondary disk")
   }))
   default = []
+}
+
+variable "backup_frequency" {
+  description = "Timing of backups: Default daily,  Default weekly, Default monthly"
+  type        = string
+  default     = "Default daily"
 }

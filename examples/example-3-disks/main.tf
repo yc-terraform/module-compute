@@ -51,45 +51,19 @@ module "dev" {
       size        = 100          
       block_size  = 4096        
       type        = "network-hdd" 
-    },
-    {
-      disk_id     = yandex_compute_disk.secondary.id
-      auto_delete = true
-      device_name = "secondary-disk-2"
-      mode        = "READ_WRITE"
     }
   ]
   filesystems = [
     {
       filesystem_id = null 
       mode = "READ_WRITE"
+      zone = var.yc_zone
     },   
     {
       filesystem_id = null 
       mode = "READ_WRITE"
-    },
-    {
-      filesystem_id = yandex_compute_filesystem.secondary.id
-      mode          = "READ_WRITE"
+      zone = var.yc_zone
     }
   ]
 }
 
-resource "yandex_compute_disk" "secondary" {
-  name               = "secondary-disk-2"
-  description        = "secondary disk"
-  folder_id          = "b1gacgku08inenk2320f"
-  zone               = var.yc_zone
-  size               = var.size
-  block_size         = "4096"
-  type               = "network-hdd"
-}
-
-resource "yandex_compute_filesystem" "secondary" {
-  name        = "secondary-filesystem"
-  description = "Secondary filesystem for dev"
-  folder_id   = "b1gacgku08inenk2320f"
-  zone        = var.yc_zone
-  size        = 50
-  type        = "network-ssd"
-}

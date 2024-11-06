@@ -15,14 +15,24 @@ module "dev" {
   allow_stopping_for_update = true
   monitoring  = true
   backup      = true
-  create_filesystem       = true
-  filesystem_name         = "my-filesystem"
-  filesystem_description  = "Filesystem for dev instance"
-  filesystem_zone         = var.yc_zone
-  filesystem_size         = 100
-  filesystem_block_size   = 4096
-  filesystem_type         = "network-hdd"
-
+  secondary_disks = [
+    {
+      disk_id     = null
+      auto_delete = true
+      device_name = "secondary-disk"
+      mode        = "READ_WRITE"
+      size        = 100          
+      block_size  = 4096        
+      type        = "network-hdd" 
+    }
+  ]
+  filesystems = [
+    {
+      filesystem_id = null 
+      mode = "READ_WRITE"
+      zone = var.yc_zone
+    }
+  ]
 
   enable_oslogin_or_ssh_keys = {
     enable-oslogin = "true"
